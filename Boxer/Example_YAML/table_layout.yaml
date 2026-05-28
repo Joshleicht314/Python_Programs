@@ -1,0 +1,607 @@
+table:
+  name: Weekly Schedule
+  columns:
+  - 10-1
+  - 10-2
+  - 10-4
+  - 10-5
+  - 10-6
+  - 10-7
+  - 10-9
+  - 10-11
+  - 9-13
+  - 9-12
+  - 8-3
+  - 8-15
+  - 8-14
+  - 8-10
+  - 8-8
+  rows:
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+settings:
+  height_steps: 1
+  width_steps: 1
+  zoom_h: 1.0
+  zoom_w: 1.0
+  block_wrap: true
+  transposed: false
+  max_visible_cols: 20
+blocks:
+- name: Funke Family
+  height: 5.0
+  width: 1
+  row: 0.0
+  col: 10.0
+  transparent: false
+  color_idx: 10
+- name: Micheal Schuermann
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 11.0
+  transparent: false
+  color_idx: 5
+- name: Abby Steivfater and guest
+  height: 2.0
+  width: 1
+  row: 8.0
+  col: 13.0
+  transparent: false
+  color_idx: 5
+- name: Donna Sauer and guest
+  height: 2.0
+  width: 1
+  row: 8.0
+  col: 11.0
+  transparent: false
+  color_idx: 4
+- name: Herman Schwantz
+  height: 2.0
+  width: 1
+  row: 2.0
+  col: 11.0
+  transparent: false
+  color_idx: 2
+- name: Dale Ridgway
+  height: 2.0
+  width: 1
+  row: 0.0
+  col: 11.0
+  transparent: false
+  color_idx: 2
+- name: Bennette Hoshaw
+  height: 2.0
+  width: 1
+  row: 6.0
+  col: 13.0
+  transparent: false
+  color_idx: 4
+- name: Tammy Lee
+  height: 1.0
+  width: 1
+  row: 2.0
+  col: 13.0
+  transparent: false
+  color_idx: 11
+  group: carolines school
+- name: Sarah Yeh
+  height: 1.0
+  width: 1
+  row: 3.0
+  col: 13.0
+  transparent: false
+  color_idx: 11
+  group: carolines school
+- name: Madaline Steiner and guest
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 13.0
+  transparent: false
+  color_idx: 3
+- name: Matthew Leicht Jordy and Aaliyah Leicht
+  height: 4.0
+  width: 1
+  row: 0.0
+  col: 8.0
+  transparent: false
+  color_idx: 9
+- name: Heckmann
+  height: 1.0
+  width: 1
+  row: 0.0
+  col: 14.0
+  transparent: false
+  color_idx: 0
+- name: Sarah Ortega and guest
+  height: 2.0
+  width: 1
+  row: 0.0
+  col: 13.0
+  transparent: false
+  color_idx: 11
+  group: carolines school
+- name: Tony Gragnani Sofia and Ellie Gragnani
+  height: 4.0
+  width: 1
+  row: 6.0
+  col: 12.0
+  transparent: false
+  color_idx: 10
+  group: Nussbaum
+- name: Hoffmeister and Mr. Ahrends
+  height: 1.0
+  width: 1
+  row: 0.0
+  col: 12.0
+  transparent: false
+  color_idx: 10
+  group: Nussbaum
+- name: Andrew Nussbaum Arthur Nussbaum
+  height: 3.0
+  width: 1
+  row: 1.0
+  col: 12.0
+  transparent: false
+  color_idx: 10
+  group: Nussbaum
+- name: David Nussbaum
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 12.0
+  transparent: false
+  color_idx: 10
+  group: Nussbaum
+- name: Mark Heidbreder
+  height: 2.0
+  width: 1
+  row: 6.0
+  col: 11.0
+  transparent: false
+  color_idx: 2
+- name: Leicht Family
+  height: 5.0
+  width: 1
+  row: 5.0
+  col: 10.0
+  transparent: false
+  color_idx: 9
+- name: Mark Leicht
+  height: 1.0
+  width: 1
+  row: 4.0
+  col: 9.0
+  transparent: false
+  color_idx: 9
+  group: dads family
+- name: Bill Schneider
+  height: 2.0
+  width: 1
+  row: 2.0
+  col: 9.0
+  transparent: false
+  color_idx: 9
+  group: dads family
+- name: Kristin Schneider
+  height: 1.0
+  width: 1
+  row: 1.0
+  col: 9.0
+  transparent: false
+  color_idx: 9
+  group: dads family
+- name: John Leicht
+  height: 1.0
+  width: 1
+  row: 0.0
+  col: 9.0
+  transparent: false
+  color_idx: 9
+  group: dads family
+- name: Daniel Junk
+  height: 2.0
+  width: 1
+  row: 7.0
+  col: 9.0
+  transparent: false
+  color_idx: 9
+  group: dads family
+- name: Stephanie Leicht Ms. Willow Leicht
+  height: 2.0
+  width: 1
+  row: 5.0
+  col: 9.0
+  transparent: false
+  color_idx: 9
+  group: dads family
+- name: Luke Riggenbach and Guest
+  height: 2.0
+  width: 1
+  row: 2.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Micheal Wagner
+  height: 1.0
+  width: 1
+  row: 5.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Kunal Mehta
+  height: 1.0
+  width: 1
+  row: 6.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Joseph Chen
+  height: 1.0
+  width: 1
+  row: 7.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Adam Panzica
+  height: 1.0
+  width: 1
+  row: 8.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Krish Gandhi
+  height: 1.0
+  width: 1
+  row: 9.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Future Greenings
+  height: 2.0
+  width: 1
+  row: 0.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Gavin Schwermin
+  height: 1.0
+  width: 1
+  row: 4.0
+  col: 6.0
+  transparent: false
+  color_idx: 1
+  group: School Friends
+- name: Nathan Orris Olivia and Lillian Orris
+  height: 4.0
+  width: 1
+  row: 6.0
+  col: 5.0
+  transparent: false
+  color_idx: 2
+  group: orrises
+- name: Bill Orris
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 5.0
+  transparent: false
+  color_idx: 2
+  group: orrises
+- name: Orris Family
+  height: 4.0
+  width: 1
+  row: 0.0
+  col: 5.0
+  transparent: false
+  color_idx: 2
+- name: Amelia Nelsen and Mr. David Lacayo
+  height: 2.0
+  width: 1
+  row: 8.0
+  col: 7.0
+  transparent: false
+  color_idx: 7
+  group: Caroline's Friends
+- name: Olivia Charles and guest
+  height: 2.0
+  width: 1
+  row: 6.0
+  col: 7.0
+  transparent: false
+  color_idx: 7
+  group: Caroline's Friends
+- name: Grace Taylor
+  height: 1.0
+  width: 1
+  row: 5.0
+  col: 7.0
+  transparent: false
+  color_idx: 7
+  group: Caroline's Friends
+- name: Future Undressers
+  height: 2.0
+  width: 1
+  row: 3.0
+  col: 7.0
+  transparent: false
+  color_idx: 7
+  group: Caroline's Friends
+- name: Molly
+  height: 1.0
+  width: 1
+  row: 2.0
+  col: 7.0
+  transparent: false
+  color_idx: 7
+  group: Caroline's Friends
+- name: JJ Jones
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 8.0
+  transparent: false
+  color_idx: 4
+- name: Cole Goodwin
+  height: 1.0
+  width: 1
+  row: 9.0
+  col: 8.0
+  transparent: false
+  color_idx: 6
+  group: me friends
+- name: Matthew Bianchi
+  height: 1.0
+  width: 1
+  row: 8.0
+  col: 8.0
+  transparent: false
+  color_idx: 6
+  group: me friends
+- name: Blake Parages
+  height: 1.0
+  width: 1
+  row: 7.0
+  col: 8.0
+  transparent: false
+  color_idx: 6
+  group: me friends
+- name: Yon
+  height: 1.0
+  width: 1
+  row: 6.0
+  col: 8.0
+  transparent: false
+  color_idx: 6
+  group: me friends
+- name: Joe
+  height: 1.0
+  width: 1
+  row: 0.0
+  col: 7.0
+  transparent: false
+  color_idx: 8
+- name: Katie Thompson
+  height: 1.0
+  width: 1
+  row: 2.0
+  col: 0.0
+  transparent: false
+  color_idx: 7
+  group: Caroline
+- name: Shelby Oertel and guest
+  height: 2.0
+  width: 1
+  row: 6.0
+  col: 0.0
+  transparent: false
+  color_idx: 7
+  group: Caroline
+- name: Erin Miller and guest
+  height: 2.0
+  width: 1
+  row: 0.0
+  col: 0.0
+  transparent: false
+  color_idx: 7
+  group: Caroline
+- name: Micheal St Aubin
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 0.0
+  transparent: false
+  color_idx: 7
+  group: Caroline
+- name: Future Williams
+  height: 2.0
+  width: 1
+  row: 8.0
+  col: 0.0
+  transparent: false
+  color_idx: 7
+  group: Caroline
+- name: Kit Hopkins
+  height: 1.0
+  width: 1
+  row: 3.0
+  col: 0.0
+  transparent: false
+  color_idx: 7
+  group: Caroline
+- name: Future Ahrends Jacob Brody
+  height: 4.0
+  width: 1
+  row: 0.0
+  col: 2.0
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Skarbek Family
+  height: 5.0
+  width: 1
+  row: 5.0
+  col: 1.0
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Ahrends Family
+  height: 5.0
+  width: 1
+  row: 0.0
+  col: 1.0
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Dustin Ahrends
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 2.0
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Lyle Ahrends
+  height: 2.0
+  width: 1
+  row: 6.0
+  col: 2.0
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Scott Cuming
+  height: 1.0
+  width: 1
+  row: 7.0
+  col: 3.0
+  transparent: false
+  color_idx: 0
+  group: moms family
+- name: Daniel Ehrhardt Izzy Ehrhardt
+  height: 3.0
+  width: 1
+  row: 3.0
+  col: 3.0
+  transparent: false
+  color_idx: 0
+  group: moms family
+- name: Patrick Cuming
+  height: 1.0
+  width: 1
+  row: 2.0
+  col: 3.0
+  transparent: false
+  color_idx: 0
+  group: moms family
+- name: Kristin Ehrhardt
+  height: 1.0
+  width: 1
+  row: 6.0
+  col: 3.0
+  transparent: false
+  color_idx: 0
+  group: moms family
+- name: Peter Heckmann
+  height: 2.0
+  width: 1
+  row: 0.0
+  col: 3.0
+  transparent: false
+  color_idx: 0
+  group: moms family
+- name: Duane Ehrhardt
+  height: 2.0
+  width: 1
+  row: 8.0
+  col: 3.0
+  transparent: false
+  color_idx: 0
+  group: moms family
+- name: Bryan Boggs
+  height: 2.0
+  width: 1
+  row: 5.0
+  col: 4.0
+  transparent: false
+  color_idx: 3
+  group: Work Friends
+- name: Elliot Cortes
+  height: 2.0
+  width: 1
+  row: 3.0
+  col: 4.0
+  transparent: false
+  color_idx: 3
+  group: Work Friends
+- name: Anthony Siu
+  height: 1.0
+  width: 1
+  row: 2.0
+  col: 4.0
+  transparent: false
+  color_idx: 3
+  group: Work Friends
+- name: Tom Wright
+  height: 2.0
+  width: 1
+  row: 0.0
+  col: 4.0
+  transparent: false
+  color_idx: 3
+  group: Work Friends
+- name: Dylan Holtzhauer and Guest
+  height: 1.0
+  width: 1
+  row: 7.0
+  col: 4.0
+  transparent: false
+  color_idx: 3
+  group: Work Friends
+- name: Mikayla Heckmann
+  height: 1.0
+  width: 1
+  row: 5.0
+  col: 14
+  transparent: false
+  color_idx: 0
+  group: uncle john
+- name: Michelle Heckmann
+  height: 1.0
+  width: 1
+  row: 6.0
+  col: 14
+  transparent: false
+  color_idx: 0
+  group: uncle john
+- name: Michael Heckmann AnnaBella Heckmann
+  height: 3.0
+  width: 1
+  row: 7.0
+  col: 14
+  transparent: false
+  color_idx: 0
+  group: uncle john
+- name: John Heckmann
+  height: 2.0
+  width: 1
+  row: 3.0
+  col: 14
+  transparent: false
+  color_idx: 0
+  group: uncle john
