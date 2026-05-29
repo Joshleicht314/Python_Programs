@@ -238,6 +238,6 @@ blocks:
   height: 15.0
   width: 1
   row: 0.0
-  col: 4
+  col: 4.0
   transparent: false
   color_idx: 21

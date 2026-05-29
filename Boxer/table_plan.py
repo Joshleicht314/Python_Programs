@@ -240,41 +240,44 @@ HELP_TEXT = """\
 ║                    tableplan  v0.7  —  controls                      ║
 ╠════════════════════════════════╦═════════════════════════════════════╣
 ║  NAVIGATION                    ║  BLOCKS                             ║
-║  h/l      left/right           ║  space    grab / drop               ║
-║  j/k      down/up              ║  a        add new block             ║
-║  (scrolls automatically)       ║  e        edit block (resize)       ║
-╠════════════════════════════════║  E        rename block              ║
-║  SIZING MODE  (after a / e)    ║  x        delete block              ║
-║  l / h    wider / narrower     ║  v        toggle transparent        ║
-║  j / k    taller / shorter     ║  y        yank (copy)               ║
-║  H/J/K/L  move anchor          ║  p        paste copy                ║
-║  Enter    confirm              ║  c        change colour             ║
+║  h/l      left/right           ║  space    grab / drop              ║
+║  j/k      down/up              ║  a        add new block            ║
+║  (scrolls automatically)       ║  e        edit block (resize)      ║
+╠════════════════════════════════║  E        rename block             ║
+║  SIZING MODE  (after a / e)    ║  x        delete block             ║
+║  l / h    wider / narrower     ║  v        toggle transparent       ║
+║  j / k    taller / shorter     ║  y        yank (copy)              ║
+║  H/J/K/L  move anchor          ║  p        paste copy               ║
+║  Enter    confirm              ║  c        change colour            ║
 ║  Esc      cancel               ╠═════════════════════════════════════╣
-╠════════════════════════════════║  GROUPS & SHELF                     ║
-║  ZOOM                          ║  g        group selected blocks     ║
-║  + / -    zoom all             ║  G        ungroup current group     ║
-║  [ / ]    zoom width only      ║  s        send to shelf             ║
-║  { / }    zoom height only     ║  S        pull from shelf           ║
+╠════════════════════════════════║  GROUPS & SHELF                    ║
+║  ZOOM                          ║  g        group selected blocks    ║
+║  + / -    zoom all             ║  G        ungroup current group    ║
+║  [ / ]    zoom width only      ║  s        send to shelf (removes)  ║
+║  { / }    zoom height only     ║  S        pull from shelf          ║
 ╠════════════════════════════════╠═════════════════════════════════════╣
-║  SEARCH                        ║  MULTI-SELECT                       ║
-║  /        search blocks        ║  V        visual mode (auto-sel.)   ║
-║  n / N    next / prev match    ║  hjkl     move + paint select       ║
-╠════════════════════════════════║  space    grab selection            ║
-║  UNDO / REDO                   ║  Esc      exit visual mode          ║
+║  SEARCH                        ║  MULTI-SELECT                      ║
+║  /        search blocks        ║  V        visual mode (auto-sel.)  ║
+║  n / N    next / prev match    ║  hjkl     move + paint select      ║
+╠════════════════════════════════║  space    grab selection           ║
+║  UNDO / REDO                   ║  Esc      exit visual mode         ║
 ║  u        undo                 ╠═════════════════════════════════════╣
-║  R        redo                 ║  ROWS & COLUMNS                     ║
-╠════════════════════════════════║  o/O      add row below/above       ║
-║  COMMANDS                      ║  i/I      add col left/right        ║
-║  :w / :q / ZZ / "  / ?         ║  d        delete row                ║
-║  :set home   reset zoom/view   ║  D        delete column             ║
+║  R        redo                 ║  ROWS & COLUMNS                    ║
+╠════════════════════════════════║  o/O      add row below/above      ║
+║  COMMANDS  (Tab to complete)   ║  i/I      add col right/left       ║
+║  :w / :q / :wq / :x / ZZ      ║  d        delete row               ║
+║  :set home   reset zoom/view   ║  D        delete column            ║
 ║  :set wrap / nowrap            ╠═════════════════════════════════════╣
-║  :set transpose  swap axes     ║  MOUSE                              ║
-║  :set width N   visible cols   ║  click    grab/drop block           ║
-║  :set height N  visible rows   ║  drag     move while held           ║
-║  :set tolerance H [W]          ║  scroll   vertical scroll           ║
-║  :set zoom h/w N.N             ║  shift+scroll  horizontal scroll    ║
-║  :flash   reveal hidden blocks ║  Overlap → always solid red         ║
-║  :check   list overlapping     ║  :check   list overlapping blocks   ║
+║  :set transpose  swap axes     ║  MOUSE                             ║
+║  :set width N   visible cols   ║  click    move cursor / grab-drop  ║
+║  :set height N  visible rows   ║  drag     move block while held    ║
+║  :set tolerance H [W]          ║  scroll   vertical scroll          ║
+║  :set zoom h/w N.N             ║  shift+scroll  horizontal scroll   ║
+║  :flash   reveal hidden blocks ╠═════════════════════════════════════╣
+║  :check   list overlapping     ║  EXPORT                            ║
+║  :export [file]                ║  :export out.svg  (vector image)   ║
+║  "        open in $EDITOR      ║  :export out.png  (raster image)   ║
+║  ?        show this help       ║  :export out.csv  (spreadsheet)    ║
 ╚════════════════════════════════╩═════════════════════════════════════╝
   Press any key to close."""
 
@@ -325,7 +328,8 @@ MODE_CMD    = "cmd"
 MODE_PROMPT = "prompt"
 
 _CMD_COMPLETIONS = sorted([
-    ":check", ":export ", ":flash", ":noh", ":q", ":q!", ":w", ":wq", ":x",
+    ":check", ":export ", ":export out.svg", ":export out.png", ":export out.csv",
+    ":flash", ":noh", ":q", ":q!", ":w", ":wq", ":x",
     ":set home", ":set nowrap", ":set transpose", ":set wrap",
     ":set width ", ":set height ", ":set tolerance ", ":set zoom h ",
     ":set zoom w ",
@@ -1119,7 +1123,9 @@ class GridWidget(Widget):
     def _key_cmd(self, event: events.Key) -> None:
         k = event.key; ch = event.character or ""
         if k == "tab":
-            self._do_tab_complete(); return
+            self._do_tab_complete(forward=True); return
+        if k == "shift+tab":
+            self._do_tab_complete(forward=False); return
         self._in_tab_cycle = False
         if k == "escape":
             self.mode = MODE_NORMAL; self.cmd_buf = ""; self.status = _HINT
@@ -1131,14 +1137,26 @@ class GridWidget(Widget):
         elif ch and ch.isprintable():
             self.cmd_buf += ch
 
-    def _do_tab_complete(self) -> None:
+    def _do_tab_complete(self, forward: bool = True) -> None:
         if not self._in_tab_cycle:
             prefix = self.cmd_buf
             self._tab_candidates = [c for c in _CMD_COMPLETIONS if c.startswith(prefix)]
             self._tab_idx = 0; self._in_tab_cycle = True
-        if self._tab_candidates:
-            self.cmd_buf = self._tab_candidates[self._tab_idx % len(self._tab_candidates)]
-            self._tab_idx += 1
+        if not self._tab_candidates:
+            return
+        n = len(self._tab_candidates)
+        if not forward:
+            self._tab_idx = (self._tab_idx - 2) % n  # -2 because we increment after
+        self.cmd_buf = self._tab_candidates[self._tab_idx % n]
+        self._tab_idx = (self._tab_idx + 1) % n
+        # Show hint in status: list up to 5 candidates
+        if n == 1:
+            hint = f"  Tab: {self._tab_candidates[0]}"
+        else:
+            shown = self._tab_candidates[:5]
+            hint  = "  Tab: " + "  ".join(shown)
+            if n > 5: hint += f"  … +{n-5} more"
+        self.status = hint; self.status_err = False
 
     def _exec_cmd(self) -> None:  # noqa: C901
         raw = self.cmd_buf.strip(); parts = raw.split(); s = self.settings
@@ -1334,6 +1352,8 @@ class GridWidget(Widget):
             self.cursor_row = abs_step; self.cursor_col = ci
             self._drop_multi()
         elif self.mode == MODE_NORMAL:
+            # Move cursor to clicked cell regardless of whether a block is there
+            self.cursor_row = abs_step; self.cursor_col = ci
             block = self._block_at(abs_step, ci)
             if block:
                 # Group-grab if block belongs to a group
@@ -1555,8 +1575,8 @@ class GridWidget(Widget):
         return [Segment(msg.ljust(W)[:W], Style(bgcolor="dark_blue", color="bright_white", bold=True))]
 
     def _shelf_place(self, idx: int) -> None:
-        entry  = self.shelf.pop(idx)
-        if not entry: return
+        entry  = self.shelf[idx]
+        if not entry: self.shelf.pop(idx); return
         hs     = self.settings.height_steps
         s      = self.settings
         # Anchor: first block in entry goes exactly at cursor top-left.
@@ -1568,20 +1588,43 @@ class GridWidget(Widget):
         dr = cursor_unit_row - anchor_row
         dc = cursor_unit_col - anchor_col
         self._snapshot()
+        placed = []; skipped = []
         for b in entry:
             new_row = b.row + dr
             new_col = int(b.col) + dc
-            # If wrap is off, clamp to table bounds
+            # If wrap is off, check bounds; skip blocks that don't fit
             if not s.block_wrap:
                 nr = len(self.table.rows); nc = len(self.table.columns)
                 bh = round(b.height * hs)
-                new_row = max(0.0, min(new_row, (nr * hs - bh) / hs))
-                new_col = max(0, min(new_col, nc - b.width))
+                if new_row < 0 or new_row * hs + bh > nr * hs:
+                    skipped.append(b); continue
+                if new_col < 0 or new_col + b.width > nc:
+                    skipped.append(b); continue
             b.row = new_row; b.col = float(new_col)
             self.table.blocks.append(b)
+            placed.append(b)
+        if skipped:
+            # Put skipped blocks back on shelf; remove only placed ones
+            remaining = skipped
+            if placed:
+                # Update shelf entry to only the skipped blocks
+                self.shelf[idx] = remaining
+            # (don't pop if anything skipped — shelf entry stays with leftovers)
+            skipped_names = ", ".join(b.name for b in skipped[:3])
+            if len(skipped) > 3: skipped_names += f" +{len(skipped)-3} more"
+            self._invalidate_conflicts()
+            placed_names = ", ".join(b.name for b in placed[:2])
+            if placed:
+                self.status = (f"  Placed: {placed_names}  ✗ {len(skipped)} block(s) out of bounds"
+                               f" — move cursor and try again"); self.status_err = True
+            else:
+                self.status = (f"  ✗ All blocks out of bounds — move cursor and try again"
+                               f" (shelf item kept)"); self.status_err = True
+            return
+        self.shelf.pop(idx)
         self._invalidate_conflicts()
-        names = ", ".join(b.name for b in entry[:3])
-        if len(entry) > 3: names += f" +{len(entry)-3} more"
+        names = ", ".join(b.name for b in placed[:3])
+        if len(placed) > 3: names += f" +{len(placed)-3} more"
         self.status = f"  Placed from shelf: {names}"; self.status_err = False
 
     # ── Yank / paste ──────────────────────────────────────────────────────────
@@ -1677,22 +1720,37 @@ class GridWidget(Widget):
         self.status = (f"  Transposed — {len(self.table.rows)} rows × "
                        f"{len(self.table.columns)} cols ({flag}, T to restore)")
     def _cmd_export(self, parts: list[str]) -> None:
-        """:export [file.svg] — render the table to an SVG file."""
-        import xml.etree.ElementTree as ET
-
+        """:export [file.svg|file.png|file.csv] — render the table to a file."""
         stem  = self.filepath.rsplit(".", 1)[0] if self.filepath else "table"
         fname = parts[1] if len(parts) > 1 else stem + ".svg"
+        ext   = fname.rsplit(".", 1)[-1].lower() if "." in fname else "svg"
+
+        if ext == "csv":
+            self._export_csv(fname); return
+        elif ext == "png":
+            self._export_png(fname); return
+        else:
+            self._export_svg(fname)
+
+    def _build_svg(self):
+        """Build and return an SVG ElementTree for the current table."""
+        import xml.etree.ElementTree as ET
+        import textwrap as tw
 
         hs = self.settings.height_steps
         nr = len(self.table.rows)
         nc = len(self.table.columns)
 
-        CELL_W = 120; CELL_H = 44 // hs * hs   # px per column / row-unit
-        HDR_H  = 34;  LBL_W  = 96;  PAD = 8
-        FONT   = "monospace"
+        CELL_W    = 120                  # px per column
+        STEP_H_PX = 44                   # px per height-step (one sub-row unit)
+        ROW_H_PX  = STEP_H_PX * hs      # px per full row (= hs steps)
+        HDR_H     = 34; LBL_W = 96; PAD = 8
+        FONT      = "monospace"
+        FONT_PX   = 11                   # px for block label font
+        CHAR_W    = FONT_PX * 0.60       # approximate char width in monospace
 
         svg_w = LBL_W + nc * CELL_W + 1
-        svg_h = HDR_H + nr * (CELL_H // hs * hs) + 1
+        svg_h = HDR_H + nr * ROW_H_PX + 1
 
         ns_svg = "http://www.w3.org/2000/svg"
         root = ET.Element("svg", {
@@ -1702,43 +1760,45 @@ class GridWidget(Widget):
             "style": f"font-family:{FONT};background:#1e1e1e;",
         })
 
-        def rect(x, y, w, h, fill, rx="0", opacity="1", stroke=None, sw="1"):
+        def rect(parent, x, y, w, h, fill, rx="0", opacity="1", stroke=None, sw="1"):
             attrs = {"x":str(x),"y":str(y),"width":str(w),"height":str(h),
                      "fill":fill,"rx":rx,"opacity":opacity}
             if stroke: attrs["stroke"] = stroke; attrs["stroke-width"] = sw
-            return ET.SubElement(root, "rect", attrs)
+            return ET.SubElement(parent, "rect", attrs)
 
-        def text(x, y, txt, fill, size="12", anchor="middle", bold=False, italic=False):
+        def svgtext(parent, x, y, txt, fill, size="12", anchor="middle",
+                    bold=False, italic=False):
             style = f"font-size:{size}px;fill:{fill};text-anchor:{anchor};"
-            if bold: style += "font-weight:bold;"
+            if bold:   style += "font-weight:bold;"
             if italic: style += "font-style:italic;"
-            el = ET.SubElement(root, "text", {"x":str(x),"y":str(y),"style":style})
+            el = ET.SubElement(parent, "text", {"x":str(x),"y":str(y),"style":style})
             el.text = str(txt); return el
 
-        def line(x1,y1,x2,y2,stroke="#444"):
-            ET.SubElement(root,"line",{"x1":str(x1),"y1":str(y1),"x2":str(x2),"y2":str(y2),
+        def line(x1, y1, x2, y2, stroke="#444"):
+            ET.SubElement(root, "line", {
+                "x1":str(x1),"y1":str(y1),"x2":str(x2),"y2":str(y2),
                 "stroke":stroke,"stroke-width":"1"})
 
         # Background + header band
-        rect(0,0,svg_w,svg_h,"#1e1e1e")
-        rect(0,0,svg_w,HDR_H,"#2a2a2a")
-        rect(0,0,LBL_W,svg_h,"#252525")
+        rect(root, 0, 0, svg_w, svg_h, "#1e1e1e")
+        rect(root, 0, 0, svg_w, HDR_H, "#2a2a2a")
+        rect(root, 0, 0, LBL_W, svg_h, "#252525")
 
         # Column headers
         for ci, col in enumerate(self.table.columns):
             cx = LBL_W + ci * CELL_W + CELL_W // 2
-            text(cx, HDR_H - PAD, str(col), "#58d1eb", size="13", bold=True)
+            svgtext(root, cx, HDR_H - PAD, str(col), "#58d1eb", size="13", bold=True)
             line(LBL_W + ci * CELL_W, 0, LBL_W + ci * CELL_W, svg_h, "#555")
         line(LBL_W + nc * CELL_W, 0, LBL_W + nc * CELL_W, svg_h, "#555")
 
         # Row labels + horizontal lines
-        step_h_px = CELL_H // hs
+        step_h_px = STEP_H_PX
         for ri, row in enumerate(self.table.rows):
-            y = HDR_H + ri * CELL_H
+            y = HDR_H + ri * ROW_H_PX
             line(0, y, svg_w, y, "#444")
-            text(LBL_W - PAD, y + CELL_H // 2 + 5, str(row), "#cccccc",
-                 size="12", anchor="end")
-        line(0, HDR_H + nr * CELL_H, svg_w, HDR_H + nr * CELL_H, "#444")
+            svgtext(root, LBL_W - PAD, y + ROW_H_PX // 2 + 5, str(row), "#cccccc",
+                    size="12", anchor="end")
+        line(0, HDR_H + nr * ROW_H_PX, svg_w, HDR_H + nr * ROW_H_PX, "#444")
 
         # Palette name → hex
         _HEX = {"green":"#008000","blue":"#0000cd","dark_magenta":"#8b008b",
@@ -1757,47 +1817,322 @@ class GridWidget(Widget):
             bs_s, be_s = self._block_steps(b)
             bc = int(b.col)
             bx = LBL_W + bc * CELL_W + 2
-            by = HDR_H + (bs_s / hs) * step_h_px + 2
+            by = HDR_H + bs_s * step_h_px + 2
             bw_px = b.width * CELL_W - 4
-            bh_px = ((be_s - bs_s) / hs) * step_h_px - 4
+            bh_px = (be_s - bs_s) * step_h_px - 4
             if bw_px <= 0 or bh_px <= 0: continue
             bg_n, fg_n = _PALETTE[b.color_idx % len(_PALETTE)]
             bg = _HEX.get(bg_n, "#004400")
             fg = _FG.get(fg_n, "#f0f0f0")
             op = "0.40" if b.transparent else "0.88"
             g  = ET.SubElement(root, "g")
-            ET.SubElement(g, "rect", {"x":str(bx),"y":str(by),
-                "width":str(bw_px),"height":str(bh_px),
-                "rx":"4","fill":bg,"opacity":op,
-                "stroke":"#ffffff20","stroke-width":"1"})
-            # Name — simple single-line centred
-            ty = by + bh_px / 2 + 5
-            lbl = b.name if len(b.name) * 7 < bw_px else b.name[:max(1, int(bw_px/7))] + "…"
-            ET.SubElement(g,"text",{
-                "x":str(bx + bw_px/2), "y":str(ty),
-                "style":f"font-size:12px;fill:{fg};text-anchor:middle;font-weight:bold;"
-            }).text = lbl
+            rect(g, bx, by, bw_px, bh_px, bg, rx="4", opacity=op,
+                 stroke="#ffffff20", sw="1")
+
+            # ── Wrapped label ───────────────────────────────────────────────
+            # How many chars fit per line, and how many lines fit vertically
+            max_chars = max(1, int(bw_px / CHAR_W) - 1)
+            line_h    = FONT_PX + 3          # px between baselines
+            max_lines = max(1, int((bh_px - 8) / line_h))
+
+            # Word-wrap the name
+            words = b.name.split()
+            lines_out: list[str] = []
+            cur = ""
+            for w in words:
+                w = w[:max_chars]            # hard-clip a single huge word
+                if not cur:
+                    cur = w
+                elif len(cur) + 1 + len(w) <= max_chars:
+                    cur += " " + w
+                else:
+                    lines_out.append(cur); cur = w
+            if cur: lines_out.append(cur)
+            if not lines_out: lines_out = [b.name[:max_chars]]
+
+            # Trim to what fits, add ellipsis if needed
+            if len(lines_out) > max_lines:
+                lines_out = lines_out[:max_lines]
+                # Truncate last line with ellipsis
+                last = lines_out[-1]
+                if len(last) > max_chars - 1:
+                    last = last[:max_chars - 1]
+                lines_out[-1] = last + "…"
+
+            # Vertically centre the block of lines within the block rect
+            total_text_h = len(lines_out) * line_h
+            text_top_y   = by + (bh_px - total_text_h) / 2 + FONT_PX  # baseline of 1st line
+            cx = bx + bw_px / 2
+
+            for li, ltext in enumerate(lines_out):
+                ty = text_top_y + li * line_h
+                svgtext(g, cx, ty, ltext, fg,
+                        size=str(FONT_PX), anchor="middle", bold=True)
+
             if b.group:
-                ET.SubElement(g,"rect",{"x":str(bx+2),"y":str(by+2),
-                    "width":"7","height":"7","rx":"2","fill":fg,"opacity":"0.5"})
+                rect(g, bx + 2, by + 2, 7, 7, fg, rx="2", opacity="0.5")
 
         # Outer border
-        ET.SubElement(root,"rect",{"x":"0","y":"0",
+        ET.SubElement(root, "rect", {"x":"0","y":"0",
             "width":str(svg_w-1),"height":str(svg_h-1),
             "fill":"none","stroke":"#666","stroke-width":"1"})
 
-        tree = ET.ElementTree(root)
+        return ET.ElementTree(root), svg_w, svg_h
+
+    def _export_svg(self, fname: str) -> None:
+        """Write the table as an SVG file."""
+        import xml.etree.ElementTree as ET
+        nr = len(self.table.rows); nc = len(self.table.columns)
+        tree, _, _ = self._build_svg()
         try:
             ET.indent(tree, space="  ")
         except AttributeError:
-            pass  # Python < 3.9 has no indent()
+            pass
         try:
             tree.write(fname, encoding="unicode", xml_declaration=True)
-            self.status = (f"  Exported → {fname}  "
+            self.status = (f"  Exported SVG → {fname}  "
                            f"({nr}r×{nc}c, {len(self.table.blocks)} blocks)")
             self.status_err = False
         except Exception as e:
             self.status = f"  Export failed: {e}"; self.status_err = True
+
+    def _export_png(self, fname: str) -> None:
+        """Rasterise the table to PNG.
+
+        Strategy (in order):
+          1. cairosvg  — best quality, full SVG support
+          2. Pillow ImageDraw — pure-Python fallback, no extra deps beyond Pillow
+        """
+        import io as _io
+        nr = len(self.table.rows); nc = len(self.table.columns)
+
+        # ── 1. cairosvg ───────────────────────────────────────────────────────
+        try:
+            import cairosvg  # type: ignore
+            tree, svg_w, svg_h = self._build_svg()
+            buf = _io.StringIO()
+            tree.write(buf, encoding="unicode", xml_declaration=True)
+            cairosvg.svg2png(bytestring=buf.getvalue().encode("utf-8"),
+                             write_to=fname,
+                             output_width=svg_w, output_height=svg_h)
+            self.status = (f"  Exported PNG → {fname}  "
+                           f"({nr}r×{nc}c, {len(self.table.blocks)} blocks)")
+            self.status_err = False; return
+        except ImportError:
+            pass
+        except Exception as e:
+            self.status = f"  PNG export (cairosvg) failed: {e}"; self.status_err = True; return
+
+        # ── 2. Pillow ImageDraw fallback ──────────────────────────────────────
+        try:
+            from PIL import Image, ImageDraw, ImageFont  # type: ignore
+            self._export_png_pillow(fname, nr, nc)
+            return
+        except ImportError:
+            self.status = ("  PNG export requires Pillow or cairosvg — "
+                           "run:  pip install Pillow  or  pip install cairosvg")
+            self.status_err = True
+
+    def _export_png_pillow(self, fname: str, nr: int, nc: int) -> None:
+        """Pure-Pillow PNG rasteriser — no cairosvg needed."""
+        from PIL import Image, ImageDraw  # type: ignore
+
+        hs        = self.settings.height_steps
+        CELL_W    = 120
+        STEP_H_PX = 44
+        ROW_H_PX  = STEP_H_PX * hs
+        HDR_H     = 34; LBL_W = 96; PAD = 8
+        FONT_PX   = 11
+        CHAR_W    = int(FONT_PX * 0.62)
+        LINE_H    = FONT_PX + 3
+
+        svg_w = LBL_W + nc * CELL_W + 1
+        svg_h = HDR_H + nr * ROW_H_PX + 1
+
+        # ── helper: parse "#rrggbb" → (r,g,b) ─────────────────────────────
+        def hex2rgb(h: str) -> tuple:
+            h = h.lstrip("#")
+            return (int(h[0:2],16), int(h[2:4],16), int(h[4:6],16))
+
+        _HEX = {"green":"#008000","blue":"#0000cd","dark_magenta":"#8b008b",
+                "dark_cyan":"#008b8b","red3":"#cd0000","yellow":"#cdcd00",
+                "spring_green2":"#00cd66","dark_blue":"#00008b",
+                "magenta":"#cd00cd","cyan":"#00cdcd","orange3":"#cd8b00",
+                "purple":"#800080","deep_sky_blue3":"#0087af",
+                "chartreuse3":"#5faf00","hot_pink3":"#af5f87","gold3":"#afaf00",
+                "steel_blue":"#5f87af","dark_olive_green3":"#87af5f",
+                "indian_red":"#af5f5f","slate_blue1":"#875fff",
+                "turquoise2":"#00d7d7","rosy_brown":"#af8787"}
+        _FG  = {"black":"#111111","white":"#f0f0f0","bright_white":"#ffffff"}
+
+        img  = Image.new("RGB", (svg_w, svg_h), hex2rgb("#1e1e1e"))
+        draw = ImageDraw.Draw(img)
+
+        # Try to load a system monospace font; fall back to default
+        font_lbl = font_hdr = font_blk = None
+        for fp in (
+            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf",
+            "/usr/share/fonts/TTF/DejaVuSansMono-Bold.ttf",
+            "/System/Library/Fonts/Menlo.ttc",
+            "C:/Windows/Fonts/consola.ttf",
+        ):
+            try:
+                from PIL import ImageFont  # type: ignore
+                font_lbl = ImageFont.truetype(fp, 12)
+                font_hdr = ImageFont.truetype(fp, 13)
+                font_blk = ImageFont.truetype(fp, FONT_PX)
+                break
+            except Exception:
+                pass
+        if font_lbl is None:
+            try:
+                from PIL import ImageFont
+                font_lbl = font_hdr = font_blk = ImageFont.load_default()
+            except Exception:
+                font_lbl = font_hdr = font_blk = None
+
+        def draw_text_centred(text, cx, cy, font, color):
+            if font:
+                try:
+                    bb = draw.textbbox((0,0), text, font=font)
+                    tw = bb[2]-bb[0]; th = bb[3]-bb[1]
+                    draw.text((cx - tw//2, cy - th//2), text, font=font, fill=color)
+                    return
+                except Exception:
+                    pass
+            draw.text((cx, cy), text, fill=color)
+
+        def draw_text_right(text, rx, cy, font, color):
+            if font:
+                try:
+                    bb = draw.textbbox((0,0), text, font=font)
+                    tw = bb[2]-bb[0]; th = bb[3]-bb[1]
+                    draw.text((rx - tw, cy - th//2), text, font=font, fill=color)
+                    return
+                except Exception:
+                    pass
+            draw.text((rx, cy), text, fill=color)
+
+        # Backgrounds
+        draw.rectangle([0, 0, svg_w, HDR_H], fill=hex2rgb("#2a2a2a"))
+        draw.rectangle([0, 0, LBL_W, svg_h], fill=hex2rgb("#252525"))
+
+        # Column headers
+        for ci, col in enumerate(self.table.columns):
+            cx = LBL_W + ci * CELL_W + CELL_W // 2
+            draw_text_centred(str(col), cx, HDR_H // 2, font_hdr, hex2rgb("#58d1eb"))
+            draw.line([(LBL_W + ci*CELL_W, 0),(LBL_W + ci*CELL_W, svg_h)],
+                      fill=hex2rgb("#555555"), width=1)
+        draw.line([(LBL_W + nc*CELL_W, 0),(LBL_W + nc*CELL_W, svg_h)],
+                  fill=hex2rgb("#555555"), width=1)
+
+        # Row labels + horizontal lines
+        for ri, row in enumerate(self.table.rows):
+            y = HDR_H + ri * ROW_H_PX
+            draw.line([(0, y),(svg_w, y)], fill=hex2rgb("#444444"), width=1)
+            draw_text_right(str(row), LBL_W - PAD, y + ROW_H_PX // 2,
+                            font_lbl, hex2rgb("#cccccc"))
+        draw.line([(0, HDR_H + nr*ROW_H_PX),(svg_w, HDR_H + nr*ROW_H_PX)],
+                  fill=hex2rgb("#444444"), width=1)
+
+        # Draw blocks
+        for b in self.table.blocks:
+            bs_s, be_s = self._block_steps(b)
+            bc = int(b.col)
+            bx = LBL_W + bc * CELL_W + 2
+            by = HDR_H + bs_s * STEP_H_PX + 2
+            bw_px = b.width * CELL_W - 4
+            bh_px = (be_s - bs_s) * STEP_H_PX - 4
+            if bw_px <= 0 or bh_px <= 0: continue
+
+            bg_n, fg_n = _PALETTE[b.color_idx % len(_PALETTE)]
+            bg_hex = _HEX.get(bg_n, "#004400")
+            fg_hex = _FG.get(fg_n, "#f0f0f0")
+            bg_rgb = hex2rgb(bg_hex); fg_rgb = hex2rgb(fg_hex)
+
+            # Block rect (simulate opacity by blending with background)
+            op = 0.40 if b.transparent else 0.88
+            bg_blend = tuple(int(bg_rgb[i]*op + 0x1e*(1-op)) for i in range(3))
+            draw.rectangle([bx, by, bx+bw_px, by+bh_px],
+                           fill=bg_blend, outline=hex2rgb("#444444"))
+
+            # Wrapped label
+            max_chars = max(1, bw_px // max(1, CHAR_W) - 1)
+            max_lines = max(1, (bh_px - 8) // LINE_H)
+            words = b.name.split()
+            lines_out: list[str] = []
+            cur = ""
+            for w in words:
+                w = w[:max_chars]
+                if not cur: cur = w
+                elif len(cur)+1+len(w) <= max_chars: cur += " "+w
+                else: lines_out.append(cur); cur = w
+            if cur: lines_out.append(cur)
+            if not lines_out: lines_out = [b.name[:max_chars]]
+            if len(lines_out) > max_lines:
+                lines_out = lines_out[:max_lines]
+                last = lines_out[-1]
+                if len(last) > max_chars-1: last = last[:max_chars-1]
+                lines_out[-1] = last+"…"
+
+            total_h = len(lines_out) * LINE_H
+            text_y  = by + (bh_px - total_h) // 2
+            cx      = bx + bw_px // 2
+            for li, lt in enumerate(lines_out):
+                draw_text_centred(lt, cx, text_y + li*LINE_H + LINE_H//2,
+                                  font_blk, fg_rgb)
+
+            if b.group:
+                draw.rectangle([bx+2, by+2, bx+9, by+9],
+                               fill=fg_rgb, outline=fg_rgb)
+
+        # Outer border
+        draw.rectangle([0, 0, svg_w-1, svg_h-1],
+                       outline=hex2rgb("#666666"), width=1)
+
+        try:
+            img.save(fname, "PNG")
+            self.status = (f"  Exported PNG → {fname}  "
+                           f"({nr}r×{nc}c, {len(self.table.blocks)} blocks)")
+            self.status_err = False
+        except Exception as e:
+            self.status = f"  PNG save failed: {e}"; self.status_err = True
+
+    def _export_csv(self, fname: str) -> None:
+        """Export table as CSV grid: rows × columns, cell = block names."""
+        import csv
+        nr = len(self.table.rows); nc = len(self.table.columns)
+        hs = self.settings.height_steps
+
+        # Build a grid: one row per table-row (not per step), one col per column
+        # A cell gets all block names whose footprint covers it (unit-rows, not steps)
+        grid: list[list[list[str]]] = [[[] for _ in range(nc)] for _ in range(nr)]
+        for b in self.table.blocks:
+            r_start = int(b.row)
+            r_end   = min(nr, math.ceil(b.row + b.height))
+            c_start = int(b.col)
+            c_end   = min(nc, c_start + b.width)
+            for ri in range(r_start, r_end):
+                for ci in range(c_start, c_end):
+                    if 0 <= ri < nr and 0 <= ci < nc:
+                        grid[ri][ci].append(b.name)
+
+        try:
+            with open(fname, "w", newline="", encoding="utf-8") as f:
+                w = csv.writer(f)
+                # Header row: blank corner + column names
+                w.writerow([""] + list(self.table.columns))
+                for ri, row_label in enumerate(self.table.rows):
+                    row_data = [row_label]
+                    for ci in range(nc):
+                        row_data.append(" / ".join(grid[ri][ci]) if grid[ri][ci] else "")
+                    w.writerow(row_data)
+            self.status = (f"  Exported CSV → {fname}  "
+                           f"({nr}r×{nc}c, {len(self.table.blocks)} blocks)")
+            self.status_err = False
+        except Exception as e:
+            self.status = f"  CSV export failed: {e}"; self.status_err = True
 
     def _cmd_check(self) -> None:
         self._invalidate_conflicts()
