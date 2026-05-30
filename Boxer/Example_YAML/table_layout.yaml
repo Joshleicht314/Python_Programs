@@ -33,7 +33,7 @@ settings:
   zoom_h: 1.0
   zoom_w: 1.0
   block_wrap: true
-  transposed: false
+  transposed: true
   max_visible_cols: 20
 blocks:
 - name: Funke Family
@@ -445,46 +445,6 @@ blocks:
   transparent: false
   color_idx: 7
   group: Caroline
-- name: Future Ahrends Jacob Brody
-  height: 4.0
-  width: 1
-  row: 0.0
-  col: 2.0
-  transparent: false
-  color_idx: 5
-  group: Ahrends
-- name: Skarbek Family
-  height: 5.0
-  width: 1
-  row: 5.0
-  col: 1.0
-  transparent: false
-  color_idx: 5
-  group: Ahrends
-- name: Ahrends Family
-  height: 5.0
-  width: 1
-  row: 0.0
-  col: 1.0
-  transparent: false
-  color_idx: 5
-  group: Ahrends
-- name: Dustin Ahrends
-  height: 2.0
-  width: 1
-  row: 4.0
-  col: 2.0
-  transparent: false
-  color_idx: 5
-  group: Ahrends
-- name: Lyle Ahrends
-  height: 2.0
-  width: 1
-  row: 6.0
-  col: 2.0
-  transparent: false
-  color_idx: 5
-  group: Ahrends
 - name: Scott Cuming
   height: 1.0
   width: 1
@@ -577,7 +537,7 @@ blocks:
   height: 1.0
   width: 1
   row: 5.0
-  col: 14
+  col: 14.0
   transparent: false
   color_idx: 0
   group: uncle john
@@ -585,7 +545,7 @@ blocks:
   height: 1.0
   width: 1
   row: 6.0
-  col: 14
+  col: 14.0
   transparent: false
   color_idx: 0
   group: uncle john
@@ -593,7 +553,7 @@ blocks:
   height: 3.0
   width: 1
   row: 7.0
-  col: 14
+  col: 14.0
   transparent: false
   color_idx: 0
   group: uncle john
@@ -601,7 +561,47 @@ blocks:
   height: 2.0
   width: 1
   row: 3.0
-  col: 14
+  col: 14.0
   transparent: false
   color_idx: 0
   group: uncle john
+- name: Future Ahrends Jacob Brody
+  height: 4.0
+  width: 1
+  row: 0.0
+  col: 2
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Skarbek Family
+  height: 5.0
+  width: 1
+  row: 5.0
+  col: 1
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Ahrends Family
+  height: 5.0
+  width: 1
+  row: 0.0
+  col: 1
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Dustin Ahrends
+  height: 2.0
+  width: 1
+  row: 4.0
+  col: 2
+  transparent: false
+  color_idx: 5
+  group: Ahrends
+- name: Lyle Ahrends
+  height: 2.0
+  width: 1
+  row: 6.0
+  col: 2
+  transparent: false
+  color_idx: 5
+  group: Ahrends

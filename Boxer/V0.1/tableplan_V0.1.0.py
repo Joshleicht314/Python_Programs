@@ -120,7 +120,7 @@ class Settings:
 #  YAML I/O
 # ─────────────────────────────────────────────────────────────────────────────
 
-def load_yaml(path: str) -> tuple[TableData, Settings]:
+def load_yaml(path: str) -> tuple[TableData, Settings, list]:
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     t = data["table"]
@@ -141,6 +141,18 @@ def load_yaml(path: str) -> tuple[TableData, Settings]:
             group       = bd.get("group") or None,
         ))
     sd = data.get("settings", {})
+    shelf: list = []
+    for entry in data.get("shelf", []):
+        shelf.append([Block(
+            name        = str(bd["name"]),
+            height      = float(bd.get("height", 1.0)),
+            width       = int(bd.get("width",  1)),
+            row         = float(bd.get("row",   0.0)),
+            col         = float(bd.get("col",   0.0)),
+            transparent = bool(bd.get("transparent", False)),
+            color_idx   = int(bd.get("color_idx",  0)),
+            group       = bd.get("group") or None,
+        ) for bd in entry])
     return table, Settings(
         height_steps    =int(sd.get("height_steps", 2)),
         width_steps     =int(sd.get("width_steps",  1)),
@@ -150,10 +162,11 @@ def load_yaml(path: str) -> tuple[TableData, Settings]:
         transposed      =bool(sd.get("transposed", False)),
         max_visible_cols=sd.get("max_visible_cols"),
         max_visible_rows=sd.get("max_visible_rows"),
-    )
+    ), shelf
 
 
-def save_yaml(path: str, table: TableData, settings: Settings) -> None:
+def save_yaml(path: str, table: TableData, settings: Settings,
+              shelf: Optional[list] = None) -> None:
     sd = {k: v for k, v in {
         "height_steps": settings.height_steps,
         "width_steps":  settings.width_steps,
@@ -171,11 +184,20 @@ def save_yaml(path: str, table: TableData, settings: Settings) -> None:
         if b.group: bd["group"] = b.group
         blocks_data.append(bd)
     with open(path, "w", encoding="utf-8") as f:
+        shelf_data = []
+        for entry in (shelf or []):
+            shelf_data.append([
+                {"name": b.name, "height": b.height, "width": b.width,
+                 "row": b.row, "col": b.col, "transparent": b.transparent,
+                 "color_idx": b.color_idx, **({"group": b.group} if b.group else {})}
+                for b in entry
+            ])
         yaml.dump({
             "table": {"name": str(table.name),
                       "columns": [str(c) for c in table.columns],
                       "rows":    [str(r) for r in table.rows]},
             "settings": sd, "blocks": blocks_data,
+            **({"shelf": shelf_data} if shelf_data else {}),
         }, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
 
@@ -238,7 +260,7 @@ class ShelfScreen(Screen):
 HELP_TEXT = """\
 ╔═════════════════════════════════════════════════════════════════════╗
 ║                    tableplan  v0.7  —  controls                     ║
-╠════════════════════════════════╦════════════════════════════════════╣
+╠═══════════════════════════════╦═════════════════════════════════════╣
 ║  NAVIGATION                    ║  BLOCKS                            ║
 ║  h/l      left/right           ║  space    grab / drop              ║
 ║  j/k      down/up              ║  a        add new block            ║
@@ -1023,11 +1045,16 @@ class GridWidget(Widget):
             if self.mode == MODE_GRAB:
                 self.table.blocks.append(self.grabbed)
                 self.grabbed = None; self.mode = MODE_NORMAL
+                # Pop the snapshot taken at pickup — nothing actually changed
+                if self._undo_stack: self._undo_stack.pop()
                 self.status = "  Grab cancelled."; self.status_err = False
             elif self.mode == MODE_MGRB:
                 for b in self.grabbed_group: self.table.blocks.append(b)
                 self.grabbed_group = []; self.grp_offsets = []
-                self.mode = MODE_NORMAL; self.status = "  Multi-grab cancelled."
+                self.mode = MODE_NORMAL
+                # Pop the snapshot taken at pickup — nothing actually changed
+                if self._undo_stack: self._undo_stack.pop()
+                self.status = "  Multi-grab cancelled."
             self.selected_ids.clear()
         # Escape also exits flash
         elif k == "escape" and self.flash_mode:
@@ -1214,7 +1241,7 @@ class GridWidget(Widget):
         self.status = f"  Unknown: {raw}"; self.status_err = True
 
     def _save(self) -> None:
-        if self.filepath: save_yaml(self.filepath, self.table, self.settings)
+        if self.filepath: save_yaml(self.filepath, self.table, self.settings, self.shelf)
 
     # ── Prompt mode ───────────────────────────────────────────────────────────
 
@@ -1265,6 +1292,8 @@ class GridWidget(Widget):
             block = self._block_at(self.cursor_row, self.cursor_col)
             if block is None:
                 self.status = "  No block at cursor."; self.status_err = True; return
+            # Snapshot BEFORE removing so undo restores the original block
+            self._snapshot()
             self.sizing_target = block
             self.sizing_block  = copy.copy(block)
             self.table.blocks.remove(block)
@@ -1280,11 +1309,12 @@ class GridWidget(Widget):
             if self.sizing_target is not None: self.table.blocks.append(self.sizing_target)
             self.sizing_block = None; self.sizing_target = None
             self.mode = MODE_NORMAL; self.status = "  Cancelled."; self.status_err = False
+            # Pop snapshot taken at sizing start — nothing was committed
+            if self._undo_stack: self._undo_stack.pop()
         elif k == "enter":
             step, ci = self.cursor_row, self.cursor_col
             if not self._in_bounds(sb, step, ci) and not self.settings.block_wrap:
                 self.status = "  \u2717 Out of bounds."; self.status_err = True; return
-            self._snapshot()
             cf = self._has_conflict(sb, step, ci)
             if self.sizing_target is not None:
                 self.sizing_target.name   = sb.name
@@ -1324,6 +1354,7 @@ class GridWidget(Widget):
         if k == "escape":
             self.color_block = None; self.mode = MODE_NORMAL; self.status = _HINT
         elif ch and ch in _PAL_KEYS:
+            self._snapshot()
             self.color_block.color_idx = _PAL_KEYS.index(ch)
             self.color_block = None; self.mode = MODE_NORMAL
             self.status = "  Colour updated."; self.status_err = False
@@ -1340,7 +1371,6 @@ class GridWidget(Widget):
             gs = self.cursor_row - self.grab_offset_row
             gc = self.cursor_col - self.grab_offset_col
             self.grabbed.row = gs / self.settings.height_steps; self.grabbed.col = gc
-            self._snapshot()
             self.table.blocks.append(self.grabbed)
             self._invalidate_conflicts()
             cids = self._get_conflict_ids()
@@ -1356,6 +1386,8 @@ class GridWidget(Widget):
             self.cursor_row = abs_step; self.cursor_col = ci
             block = self._block_at(abs_step, ci)
             if block:
+                # Snapshot BEFORE removing so undo restores block at original position
+                self._snapshot()
                 # Group-grab if block belongs to a group
                 if block.group:
                     members = self._group_members(block.group)
@@ -1407,6 +1439,8 @@ class GridWidget(Widget):
         block = self._block_at(self.cursor_row, self.cursor_col)
         if not block:
             self.status = "  No block at cursor."; self.status_err = True; return
+        # Snapshot BEFORE removing so undo can restore the block at its original position
+        self._snapshot()
         # Group-grab?
         if block.group:
             members = self._group_members(block.group)
@@ -1431,7 +1465,6 @@ class GridWidget(Widget):
         gc = self.cursor_col - self.grab_offset_col
         hs = self.settings.height_steps
         self.grabbed.row = gs / hs; self.grabbed.col = gc
-        self._snapshot()
         self.table.blocks.append(self.grabbed)
         self._invalidate_conflicts()
         cids = self._get_conflict_ids()
@@ -1445,6 +1478,8 @@ class GridWidget(Widget):
     def _start_multi_grab(self) -> None:
         selected = [b for b in self.table.blocks if id(b) in self.selected_ids]
         if not selected: return
+        # Snapshot BEFORE removing so undo restores blocks at their original positions
+        self._snapshot()
         hs = self.settings.height_steps
         self.grabbed_group = selected
         self.grp_offsets   = [(round(b.row * hs) - self.cursor_row,
@@ -1455,7 +1490,6 @@ class GridWidget(Widget):
 
     def _drop_multi(self) -> None:
         hs = self.settings.height_steps
-        self._snapshot()
         for i, gb in enumerate(self.grabbed_group):
             ro, co = self.grp_offsets[i]
             gb.row = (self.cursor_row + ro) / hs
@@ -2274,8 +2308,8 @@ class GridWidget(Widget):
         with self.app.suspend():
             subprocess.run([editor, self.filepath])
         try:
-            table, settings = load_yaml(self.filepath)
-            self.table = table; self.settings = settings
+            table, settings, shelf = load_yaml(self.filepath)
+            self.table = table; self.settings = settings; self.shelf = shelf
             self._invalidate_conflicts()
             self.status = f"  Reloaded from {self.filepath}"; self.status_err = False
         except Exception as e:
@@ -2299,12 +2333,15 @@ class TablePlanApp(App):
     ENABLE_COMMAND_PALETTE = False
 
     def __init__(self, table: TableData, settings: Settings,
-                 filepath: Optional[str]) -> None:
+                 filepath: Optional[str], shelf: Optional[list] = None) -> None:
         super().__init__()
-        self._table = table; self._settings = settings; self._filepath = filepath
+        self._table = table; self._settings = settings
+        self._filepath = filepath; self._shelf = shelf or []
 
     def compose(self) -> ComposeResult:
-        yield GridWidget(self._table, self._settings, self._filepath)
+        gw = GridWidget(self._table, self._settings, self._filepath)
+        gw.shelf = list(self._shelf)
+        yield gw
 
     def on_mount(self) -> None:
         self.title = f"tableplan \u2014 {self._filepath}" if self._filepath else "tableplan (demo)"
@@ -2318,11 +2355,11 @@ class TablePlanApp(App):
 def main() -> None:
     filepath: Optional[str] = sys.argv[1] if len(sys.argv) > 1 else None
     if filepath and os.path.exists(filepath):
-        table, settings = load_yaml(filepath)
+        table, settings, shelf = load_yaml(filepath)
     else:
-        table, settings = _demo_table()
-        if filepath: save_yaml(filepath, table, settings)
-    TablePlanApp(table, settings, filepath).run()
+        table, settings = _demo_table(); shelf = []
+        if filepath: save_yaml(filepath, table, settings, shelf)
+    TablePlanApp(table, settings, filepath, shelf).run()
 
 
 if __name__ == "__main__":
