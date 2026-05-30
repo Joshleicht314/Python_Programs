@@ -122,34 +122,6 @@ blocks:
   col: 6.0
   transparent: false
   color_idx: 5
-- name: trieste-piran
-  height: 1.0
-  width: 1
-  row: 13.5
-  col: 7.0
-  transparent: false
-  color_idx: 6
-- name: Triste
-  height: 9.5
-  width: 1
-  row: 0.0
-  col: 7.0
-  transparent: false
-  color_idx: 2
-- name: soca-predjama
-  height: 1.5
-  width: 1
-  row: 8.0
-  col: 5.0
-  transparent: false
-  color_idx: 4
-- name: predjama-trieste
-  height: 1.0
-  width: 1
-  row: 9.5
-  col: 5.0
-  transparent: true
-  color_idx: 5
 - name: svilaja-dinara
   height: 1.0
   width: 1
@@ -171,13 +143,6 @@ blocks:
   col: 10.0
   transparent: false
   color_idx: 14
-- name: piran-pula
-  height: 1.5
-  width: 1
-  row: 0.0
-  col: 8.0
-  transparent: false
-  color_idx: 7
 - name: plitvcka-zagreb
   height: 2.0
   width: 1
@@ -185,13 +150,6 @@ blocks:
   col: 11.0
   transparent: false
   color_idx: 15
-- name: Caves and Park
-  height: 10.0
-  width: 1
-  row: 0.0
-  col: 11.0
-  transparent: false
-  color_idx: 6
 - name: Castle and Cave
   height: 11.5
   width: 1
@@ -206,13 +164,6 @@ blocks:
   col: 10.0
   transparent: false
   color_idx: 11
-- name: pula-paklenica
-  height: 5.0
-  width: 1
-  row: 4.0
-  col: 8.0
-  transparent: false
-  color_idx: 8
 - name: pklencia-trogil
   height: 2.0
   width: 1
@@ -227,13 +178,6 @@ blocks:
   col: 9.0
   transparent: false
   color_idx: 10
-- name: Triglavski-Soca and Drive
-  height: 3.0
-  width: 1
-  row: 5.0
-  col: 5.0
-  transparent: false
-  color_idx: 3
 - name: Triglavski Mountains
   height: 15.0
   width: 1
@@ -241,3 +185,73 @@ blocks:
   col: 4.0
   transparent: false
   color_idx: 21
+- name: Zagreb
+  height: 4.0
+  width: 1
+  row: 0.0
+  col: 12
+  transparent: false
+  color_idx: 7
+- name: Caves and Park
+  height: 13.0
+  width: 1
+  row: 0.0
+  col: 11
+  transparent: false
+  color_idx: 6
+- name: soca-predjama
+  height: 1.5
+  width: 1
+  row: 3.0
+  col: 5
+  transparent: false
+  color_idx: 4
+- name: Triglavski-Soca and Drive
+  height: 3.0
+  width: 1
+  row: 0.0
+  col: 5
+  transparent: false
+  color_idx: 3
+- name: predjama-trieste
+  height: 1.0
+  width: 1
+  row: 4.5
+  col: 5
+  transparent: true
+  color_idx: 5
+- name: Triste
+  height: 9.5
+  width: 1
+  row: 5.5
+  col: 5
+  transparent: false
+  color_idx: 2
+- name: trieste-piran
+  height: 1.0
+  width: 1
+  row: 13.5
+  col: 6
+  transparent: false
+  color_idx: 6
+- name: Piran
+  height: 5.0
+  width: 1
+  row: 0.0
+  col: 7
+  transparent: false
+  color_idx: 8
+- name: piran-pula
+  height: 1.5
+  width: 1
+  row: 5.0
+  col: 7
+  transparent: false
+  color_idx: 7
+- name: pula-paklenica
+  height: 5.0
+  width: 1
+  row: 3.0
+  col: 8.0
+  transparent: false
+  color_idx: 8

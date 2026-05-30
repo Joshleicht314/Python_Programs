@@ -236,10 +236,10 @@ class ShelfScreen(Screen):
 
 
 HELP_TEXT = """\
-╔══════════════════════════════════════════════════════════════════════╗
-║                    tableplan  v0.7  —  controls                      ║
-╠════════════════════════════════╦═════════════════════════════════════╣
-║  NAVIGATION                    ║  BLOCKS                             ║
+╔═════════════════════════════════════════════════════════════════════╗
+║                    tableplan  v0.7  —  controls                     ║
+╠════════════════════════════════╦════════════════════════════════════╣
+║  NAVIGATION                    ║  BLOCKS                            ║
 ║  h/l      left/right           ║  space    grab / drop              ║
 ║  j/k      down/up              ║  a        add new block            ║
 ║  (scrolls automatically)       ║  e        edit block (resize)      ║
@@ -249,36 +249,36 @@ HELP_TEXT = """\
 ║  j / k    taller / shorter     ║  y        yank (copy)              ║
 ║  H/J/K/L  move anchor          ║  p        paste copy               ║
 ║  Enter    confirm              ║  c        change colour            ║
-║  Esc      cancel               ╠═════════════════════════════════════╣
+║  Esc      cancel               ╠════════════════════════════════════╣
 ╠════════════════════════════════║  GROUPS & SHELF                    ║
 ║  ZOOM                          ║  g        group selected blocks    ║
 ║  + / -    zoom all             ║  G        ungroup current group    ║
 ║  [ / ]    zoom width only      ║  s        send to shelf (removes)  ║
 ║  { / }    zoom height only     ║  S        pull from shelf          ║
-╠════════════════════════════════╠═════════════════════════════════════╣
+╠════════════════════════════════╠════════════════════════════════════╣
 ║  SEARCH                        ║  MULTI-SELECT                      ║
 ║  /        search blocks        ║  V        visual mode (auto-sel.)  ║
 ║  n / N    next / prev match    ║  hjkl     move + paint select      ║
 ╠════════════════════════════════║  space    grab selection           ║
 ║  UNDO / REDO                   ║  Esc      exit visual mode         ║
-║  u        undo                 ╠═════════════════════════════════════╣
+║  u        undo                 ╠════════════════════════════════════╣
 ║  R        redo                 ║  ROWS & COLUMNS                    ║
 ╠════════════════════════════════║  o/O      add row below/above      ║
 ║  COMMANDS  (Tab to complete)   ║  i/I      add col right/left       ║
-║  :w / :q / :wq / :x / ZZ      ║  d        delete row               ║
+║  :w / :q / :wq / :x / ZZ       ║  d        delete row               ║
 ║  :set home   reset zoom/view   ║  D        delete column            ║
-║  :set wrap / nowrap            ╠═════════════════════════════════════╣
+║  :set wrap / nowrap            ╠════════════════════════════════════╣
 ║  :set transpose  swap axes     ║  MOUSE                             ║
 ║  :set width N   visible cols   ║  click    move cursor / grab-drop  ║
 ║  :set height N  visible rows   ║  drag     move block while held    ║
 ║  :set tolerance H [W]          ║  scroll   vertical scroll          ║
 ║  :set zoom h/w N.N             ║  shift+scroll  horizontal scroll   ║
-║  :flash   reveal hidden blocks ╠═════════════════════════════════════╣
+║  :flash   reveal hidden blocks ╠════════════════════════════════════╣
 ║  :check   list overlapping     ║  EXPORT                            ║
 ║  :export [file]                ║  :export out.svg  (vector image)   ║
 ║  "        open in $EDITOR      ║  :export out.png  (raster image)   ║
 ║  ?        show this help       ║  :export out.csv  (spreadsheet)    ║
-╚════════════════════════════════╩═════════════════════════════════════╝
+╚════════════════════════════════╩════════════════════════════════════╝
   Press any key to close."""
 
 
@@ -1747,7 +1747,7 @@ class GridWidget(Widget):
         HDR_H     = 34; LBL_W = 96; PAD = 8
         FONT      = "monospace"
         FONT_PX   = 11                   # px for block label font
-        CHAR_W    = FONT_PX * 0.60       # approximate char width in monospace
+        CHAR_W    = FONT_PX * 0.62       # approximate char width in monospace
 
         svg_w = LBL_W + nc * CELL_W + 1
         svg_h = HDR_H + nr * ROW_H_PX + 1
@@ -1759,6 +1759,16 @@ class GridWidget(Widget):
             "viewBox": f"0 0 {svg_w} {svg_h}",
             "style": f"font-family:{FONT};background:#1e1e1e;",
         })
+
+        # <defs> section — clip paths (one per block) go here
+        defs = ET.SubElement(root, "defs")
+        _clip_id = [0]
+        def make_clip(x, y, w, h) -> str:
+            cid = f"c{_clip_id[0]}"; _clip_id[0] += 1
+            cp = ET.SubElement(defs, "clipPath", {"id": cid})
+            ET.SubElement(cp, "rect", {"x":str(int(x)),"y":str(int(y)),
+                                       "width":str(int(w)),"height":str(int(h))})
+            return cid
 
         def rect(parent, x, y, w, h, fill, rx="0", opacity="1", stroke=None, sw="1"):
             attrs = {"x":str(x),"y":str(y),"width":str(w),"height":str(h),
@@ -1825,17 +1835,19 @@ class GridWidget(Widget):
             bg = _HEX.get(bg_n, "#004400")
             fg = _FG.get(fg_n, "#f0f0f0")
             op = "0.40" if b.transparent else "0.88"
-            g  = ET.SubElement(root, "g")
+            clip_id = make_clip(bx, by, bw_px, bh_px)
+            g  = ET.SubElement(root, "g", {"clip-path": f"url(#{clip_id})"})
             rect(g, bx, by, bw_px, bh_px, bg, rx="4", opacity=op,
                  stroke="#ffffff20", sw="1")
 
             # ── Wrapped label ───────────────────────────────────────────────
-            # How many chars fit per line, and how many lines fit vertically
-            max_chars = max(1, int(bw_px / CHAR_W) - 1)
+            # Use inner width with padding so words don't touch block edges
+            inner_w   = bw_px - 10
             line_h    = FONT_PX + 3          # px between baselines
             max_lines = max(1, int((bh_px - 8) / line_h))
 
-            # Word-wrap the name
+            # Word-wrap the name (char-count estimate; SVG clips via clipPath)
+            max_chars = max(1, int(inner_w / CHAR_W))
             words = b.name.split()
             lines_out: list[str] = []
             cur = ""
@@ -2057,31 +2069,63 @@ class GridWidget(Widget):
             draw.rectangle([bx, by, bx+bw_px, by+bh_px],
                            fill=bg_blend, outline=hex2rgb("#444444"))
 
-            # Wrapped label
-            max_chars = max(1, bw_px // max(1, CHAR_W) - 1)
-            max_lines = max(1, (bh_px - 8) // LINE_H)
+            # Wrapped label — measure actual pixel widths, then clip to block region
+            inner_w = bw_px - 8   # horizontal padding inside block
+            inner_h = bh_px - 8
+
+            def text_width(t):
+                try:
+                    bb = draw.textbbox((0,0), t, font=font_blk)
+                    return bb[2] - bb[0]
+                except Exception:
+                    return len(t) * CHAR_W
+
+            # Word-wrap using real pixel measurements
             words = b.name.split()
             lines_out: list[str] = []
             cur = ""
             for w in words:
-                w = w[:max_chars]
-                if not cur: cur = w
-                elif len(cur)+1+len(w) <= max_chars: cur += " "+w
-                else: lines_out.append(cur); cur = w
+                # Hard-clip a single word that is wider than the block
+                while text_width(w) > inner_w and len(w) > 1:
+                    w = w[:-1]
+                candidate = (cur + " " + w).strip()
+                if not cur:
+                    cur = w
+                elif text_width(candidate) <= inner_w:
+                    cur = candidate
+                else:
+                    lines_out.append(cur); cur = w
             if cur: lines_out.append(cur)
-            if not lines_out: lines_out = [b.name[:max_chars]]
+            if not lines_out: lines_out = [b.name[0]]
+
+            # Trim to lines that fit vertically
+            max_lines = max(1, inner_h // LINE_H)
             if len(lines_out) > max_lines:
                 lines_out = lines_out[:max_lines]
+                # Trim last line + add ellipsis until it fits
                 last = lines_out[-1]
-                if len(last) > max_chars-1: last = last[:max_chars-1]
-                lines_out[-1] = last+"…"
+                while text_width(last + "…") > inner_w and len(last) > 1:
+                    last = last[:-1]
+                lines_out[-1] = last + "…"
 
+            # Draw text onto a temporary image the size of the block, then paste
+            # This gives us pixel-perfect clipping at the block boundary
+            tmp = Image.new("RGBA", (bw_px, bh_px), (0, 0, 0, 0))
+            tdraw = ImageDraw.Draw(tmp)
             total_h = len(lines_out) * LINE_H
-            text_y  = by + (bh_px - total_h) // 2
-            cx      = bx + bw_px // 2
+            start_y = (bh_px - total_h) // 2
             for li, lt in enumerate(lines_out):
-                draw_text_centred(lt, cx, text_y + li*LINE_H + LINE_H//2,
-                                  font_blk, fg_rgb)
+                try:
+                    bb = draw.textbbox((0,0), lt, font=font_blk)
+                    tw = bb[2] - bb[0]
+                except Exception:
+                    tw = len(lt) * CHAR_W
+                tx = (bw_px - tw) // 2
+                ty = start_y + li * LINE_H
+                tdraw.text((tx, ty), lt, font=font_blk, fill=fg_rgb + (255,))
+
+            # Paste clipped text onto main image
+            img.paste(tmp, (bx, by), tmp)
 
             if b.group:
                 draw.rectangle([bx+2, by+2, bx+9, by+9],

@@ -1,5 +1,6 @@
 Markh
 
+
 Overview: To create a terminal based TUI for a table organizer/planner. The tui will be run on all devices (linux, windows, mac os, freebsd?). The application will allow users to move "blocks" around on the table. 
 
 How: The program will start in python on a linux machine and migrate from there. We may need to switch to rust for improved compatibaility and for speed. The tables and blocks will be stored inside a yaml file for future use and to allow for multiple tables and continuous refinement of the tables. 
@@ -432,3 +433,11 @@ MarkH
 - Tab auto complete for commands
 
 - add ability to customize settings and defaults in .tablerc file
+
+MarkI
+# Prompt 11
+- Fixing export to include wrap
+
+MarkJ
+# Prompt 12
+- Take this table_generation.py and convert it to be easier to use. Specifically, the rows and columns can you make them come in a secondary file? leave the wrap, steps and seed
