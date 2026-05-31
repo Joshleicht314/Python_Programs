@@ -71,6 +71,7 @@ S_GHOST_OK = Style(bgcolor="yellow",      color="black")
 S_GHOST_CF = Style(bgcolor="dark_orange3",color="white")
 S_GHOST_OB = Style(bgcolor="red",         color="white")
 S_BORDER   = Style(color="bright_black")
+S_HDIV     = Style(color="bright_black")   # horizontal row-divider (soft, same tone as │)
 S_HEADER   = Style(color="cyan", bold=True)
 S_LABEL    = Style(color="white")
 S_CURSOR   = Style(bgcolor="blue",color="white", bold=True)
@@ -258,10 +259,10 @@ class ShelfScreen(Screen):
 
 
 HELP_TEXT = """\
-╔═════════════════════════════════════════════════════════════════════╗
-║                    tableplan  v0.7  —  controls                     ║
-╠═══════════════════════════════╦═════════════════════════════════════╣
-║  NAVIGATION                    ║  BLOCKS                            ║
+╔══════════════════════════════════════════════════════════════════════╗
+║                    tableplan  v0.7  —  controls                      ║
+╠════════════════════════════════╦═════════════════════════════════════╣
+║  NAVIGATION                    ║  BLOCKS                             ║
 ║  h/l      left/right           ║  space    grab / drop              ║
 ║  j/k      down/up              ║  a        add new block            ║
 ║  (scrolls automatically)       ║  e        edit block (resize)      ║
@@ -271,36 +272,36 @@ HELP_TEXT = """\
 ║  j / k    taller / shorter     ║  y        yank (copy)              ║
 ║  H/J/K/L  move anchor          ║  p        paste copy               ║
 ║  Enter    confirm              ║  c        change colour            ║
-║  Esc      cancel               ╠════════════════════════════════════╣
+║  Esc      cancel               ╠═════════════════════════════════════╣
 ╠════════════════════════════════║  GROUPS & SHELF                    ║
 ║  ZOOM                          ║  g        group selected blocks    ║
 ║  + / -    zoom all             ║  G        ungroup current group    ║
 ║  [ / ]    zoom width only      ║  s        send to shelf (removes)  ║
 ║  { / }    zoom height only     ║  S        pull from shelf          ║
-╠════════════════════════════════╠════════════════════════════════════╣
+╠════════════════════════════════╠═════════════════════════════════════╣
 ║  SEARCH                        ║  MULTI-SELECT                      ║
 ║  /        search blocks        ║  V        visual mode (auto-sel.)  ║
 ║  n / N    next / prev match    ║  hjkl     move + paint select      ║
 ╠════════════════════════════════║  space    grab selection           ║
 ║  UNDO / REDO                   ║  Esc      exit visual mode         ║
-║  u        undo                 ╠════════════════════════════════════╣
+║  u        undo                 ╠═════════════════════════════════════╣
 ║  R        redo                 ║  ROWS & COLUMNS                    ║
 ╠════════════════════════════════║  o/O      add row below/above      ║
 ║  COMMANDS  (Tab to complete)   ║  i/I      add col right/left       ║
-║  :w / :q / :wq / :x / ZZ       ║  d        delete row               ║
+║  :w / :q / :wq / :x / ZZ      ║  d        delete row               ║
 ║  :set home   reset zoom/view   ║  D        delete column            ║
-║  :set wrap / nowrap            ╠════════════════════════════════════╣
+║  :set wrap / nowrap            ╠═════════════════════════════════════╣
 ║  :set transpose  swap axes     ║  MOUSE                             ║
 ║  :set width N   visible cols   ║  click    move cursor / grab-drop  ║
 ║  :set height N  visible rows   ║  drag     move block while held    ║
 ║  :set tolerance H [W]          ║  scroll   vertical scroll          ║
 ║  :set zoom h/w N.N             ║  shift+scroll  horizontal scroll   ║
-║  :flash   reveal hidden blocks ╠════════════════════════════════════╣
+║  :flash   reveal hidden blocks ╠═════════════════════════════════════╣
 ║  :check   list overlapping     ║  EXPORT                            ║
 ║  :export [file]                ║  :export out.svg  (vector image)   ║
 ║  "        open in $EDITOR      ║  :export out.png  (raster image)   ║
 ║  ?        show this help       ║  :export out.csv  (spreadsheet)    ║
-╚════════════════════════════════╩════════════════════════════════════╝
+╚════════════════════════════════╩═════════════════════════════════════╝
   Press any key to close."""
 
 
@@ -546,7 +547,18 @@ class GridWidget(Widget):
             n_vis_s = min(n_vis_s, s.max_visible_rows * s.height_steps)
         n_vis_s  = max(1, n_vis_s)
 
-        avail_h  = max(1, H - 2)
+        # Number of separator lines = one per row boundary visible, i.e. n_vis_rows - 1
+        n_vis_rows = max(1, (n_vis_s + s.height_steps - 1) // s.height_steps)
+        n_seps_est = max(0, n_vis_rows - 1)
+        # First estimate step_h without separators to see if they'll even be shown
+        avail_h_nosep = max(1, H - 2)
+        base_sh_nosep = max(1, avail_h_nosep // n_vis_s)
+        step_h_nosep  = max(1, int(base_sh_nosep * s.zoom_h))
+        # Only subtract separators from available height when step_h > 1
+        if step_h_nosep > 1:
+            avail_h = max(1, H - 2 - n_seps_est)
+        else:
+            avail_h = avail_h_nosep
         base_sh  = max(1, avail_h // n_vis_s)
         step_h   = max(1, int(base_sh * s.zoom_h))
 
@@ -572,7 +584,7 @@ class GridWidget(Widget):
             self.view_row_off = self.cursor_row
         elif self.cursor_row >= self.view_row_off + n_vis_s:
             self.view_row_off = self.cursor_row - n_vis_s + 1
-        self.view_row_off = max(0, min(self.view_row_off, n_steps - 1))
+        self.view_row_off = max(0, min(self.view_row_off, max(0, n_steps - n_vis_s)))
 
         if self.cursor_col < self.view_col_off:
             self.view_col_off = self.cursor_col
@@ -788,6 +800,42 @@ class GridWidget(Widget):
         total_offset = avail_first + middle_steps + steps_here
         return total_offset * step_h + line_in_step
 
+    def _body_y_to_step(self, body_y: int) -> tuple[int, int, bool]:
+        """Convert a body-y (0-based, after header) to (abs_step, line_in_step, is_sep).
+
+        Layout per row (N > 0):  1 separator line  +  hs*step_h content lines
+        Row 0 has no preceding separator:            hs*step_h content lines only
+
+        Returns is_sep=True when body_y lands on a separator line.
+        """
+        step_h, _, _, _, _ = self._layout()
+        hs    = self.settings.height_steps
+        row_h = hs * step_h          # content lines per full row
+
+        # Row 0: body_y in [0, row_h)  — no separator
+        if body_y < row_h:
+            step_off  = body_y // step_h
+            line_in_s = body_y  % step_h
+            return self.view_row_off + step_off, line_in_s, False
+
+        # Rows 1+: each subsequent row occupies (1 sep + row_h content) = row_h+1 lines
+        remainder = body_y - row_h   # position after row 0's content
+        slot_h    = row_h + 1
+        unit_i    = 1 + remainder // slot_h   # which row (1-based index)
+        within    = remainder % slot_h
+
+        if within == 0:
+            # Separator line before this row
+            abs_step = self.view_row_off + unit_i * hs
+            return abs_step, 0, True
+
+        # Content line (within in [1, row_h])
+        content_y = within - 1
+        step_off  = content_y // step_h
+        line_in_s = content_y  % step_h
+        abs_step  = self.view_row_off + unit_i * hs + step_off
+        return abs_step, line_in_s, False
+
     def render_line(self, y: int) -> Strip:  # noqa: C901
         if self.size.width == 0 or self.size.height == 0:
             return Strip([])
@@ -809,16 +857,41 @@ class GridWidget(Widget):
             if used < W: segs.append(Segment(" " * (W - used), S_EMPTY))
             return Strip(segs)
 
-        body_y       = y - 1
-        step_in_view = body_y // step_h
-        line_in_step = body_y % step_h
-        abs_step     = self.view_row_off + step_in_view
+        body_y = y - 1
+        # At minimum zoom (step_h==1) separators would consume half the display; suppress them
+        if step_h == 1:
+            abs_step = self.view_row_off + body_y
+            line_in_step = 0
+            is_sep = False
+        else:
+            abs_step, line_in_step, is_sep = self._body_y_to_step(body_y)
+        unit_i   = abs_step // hs
 
-        if step_in_view >= n_vis_s or abs_step >= n_rows * hs:
+        # Separator line: draw ─ across empty cells, block colour where a block sits
+        if is_sep:
+            segs = [Segment("─" * row_lw, S_HDIV)]
+            conflict_ids = self._get_conflict_ids()
+            for i, ci in enumerate(vis_cols):
+                cw = col_widths[i]
+                segs.append(Segment("┼", S_BORDER))
+                all_blks = self._all_blocks_at(abs_step, ci)
+                if all_blks:
+                    top = all_blks[0]
+                    if id(top) in conflict_ids:   style = S_CONFLICT
+                    elif top.transparent:          style = _dim(top.color_idx)
+                    else:                          style = _solid(top.color_idx)
+                    segs.append(Segment("─" * cw, style))
+                else:
+                    segs.append(Segment("─" * cw, S_HDIV))
+            segs.append(Segment("┤", S_BORDER))
+            used = row_lw + sum(col_widths) + len(vis_cols) + 1
+            if used < W: segs.append(Segment("─" * (W - used), S_HDIV))
+            return Strip(segs)
+
+        if unit_i >= n_rows or abs_step >= n_rows * hs:
             return Strip([Segment(" " * W, S_EMPTY)])
 
         rows_s   = [str(r) for r in self.table.rows]
-        unit_i   = abs_step // hs
         sub_step = abs_step % hs
         show_lbl = (sub_step == 0) and (line_in_step == 0)
 
@@ -875,7 +948,6 @@ class GridWidget(Widget):
                         n_lines = (be - bs) * step_h
                         line_abs = self._block_line_abs(top, abs_step, ci,
                                                         step_h, line_in_step)
-                        # Clamp to valid range (safety for edge cases / wrapping)
                         line_abs = max(0, min(line_abs, n_lines - 1))
                         wrapped  = _wrap_label(top.name, cw, n_lines)
                         txt = wrapped[line_abs] if 0 <= line_abs < len(wrapped) else ""
@@ -888,7 +960,6 @@ class GridWidget(Widget):
                         elif id(top) in conflict_ids: style = S_CONFLICT
                         else:                      style = _solid(top.color_idx)
                     else:
-                        # Multiple overlapping — stripe names per line
                         show_blk = all_blks[line_in_step % n]
                         pfx = "►" if id(show_blk) in self.selected_ids else ""
                         txt = (pfx + show_blk.name) if line_in_step < n else ""
@@ -1000,7 +1071,8 @@ class GridWidget(Widget):
                                     max(0, len(self.table.columns) - 1))
         else:
             n_steps = max(1, len(self.table.rows) * self.settings.height_steps)
-            self.view_row_off = min(self.view_row_off + 1, n_steps - 1)
+            _, _, _, _, n_vis_s = self._layout()
+            self.view_row_off = min(self.view_row_off + 1, max(0, n_steps - n_vis_s))
         self.refresh()
 
     def on_mouse_scroll_up(self, event: events.MouseScrollUp) -> None:
@@ -1421,9 +1493,13 @@ class GridWidget(Widget):
         step_h, row_lw, col_widths, vis_cols, n_vis_s = self._layout()
         H = self.size.height; hs = self.settings.height_steps; nr = len(self.table.rows)
         if y == 0 or y == H - 1: return None
-        body_y = y - 1; step_in_view = body_y // step_h
-        abs_step = self.view_row_off + step_in_view
-        if step_in_view >= n_vis_s or abs_step >= nr * hs: return None
+        body_y = y - 1
+        if step_h == 1:
+            abs_step = self.view_row_off + body_y
+            if abs_step >= nr * hs: return None
+        else:
+            abs_step, _, _ = self._body_y_to_step(body_y)
+            if abs_step >= nr * hs: return None
         if x < row_lw: return None
         cx = x - row_lw
         for i, ci in enumerate(vis_cols):
