@@ -441,3 +441,8 @@ MarkI
 MarkJ
 # Prompt 12
 - Take this table_generation.py and convert it to be easier to use. Specifically, the rows and columns can you make them come in a secondary file? leave the wrap, steps and seed
+
+MarkK 
+# Prompt 13
+- make the table easily transposable fully
+- fix vertical scroll
