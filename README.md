@@ -24,3 +24,9 @@
 ### **Apple Image Converter**
 - Converts Apple photo directories to standard formats (JPG and MP4).
 - Copies the folder hierarchy and transfers alternate files (PNG, JPEG, etc.).
+
+---
+
+### **Boxer**
+- Grid based organization planner  
+- Vim style controls with textual TUI
